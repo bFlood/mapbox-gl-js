@@ -1,0 +1,14 @@
+<table class="documentation-methods">
+    <tr>
+        <th>Method</th>
+        <th>Returns</th>
+        <th>Description</th>
+    </tr>
+    {{#methods}}
+    <tr>
+        <td>{{>signature}}</td>
+        <td>{{#returns}}&lt;{{type.name}}&gt; {{description}}{{/returns}}</td>
+        <td>{{description}}</td>
+    </tr>
+    {{/methods}}
+</table>

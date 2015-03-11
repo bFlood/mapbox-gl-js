@@ -3,41 +3,70 @@
 var fs = require('fs'),
     path = require('path'),
     marked = require('marked'),
-    _ = require('underscore');
-
-var index = _.template(fs.readFileSync(path.join(__dirname, 'index.html'), 'utf-8'));
+    _ = require('underscore'),
+    documentation = require('documentation'),
+    normalize = require('documentation/streams/normalize'),
+    flatten = require('documentation/streams/flatten'),
+    through = require('through'),
+    Handlebars = require('handlebars');
 
 var renderer = new marked.Renderer(),
-	heading = {},
-	toc = '';
+    heading = {},
+    classes = {},
+    toc = '',
+    api = '';
 
-renderer.heading = function(text, level) {
-	var escapedText = text.toLowerCase().replace(/[^\w]+/g, '-');
-	heading[level] = escapedText;
-	var id = level > 2 ? heading[level-1]+'-'+escapedText : escapedText;
+function getClassDescriptor(name) {
+    var descriptor = classes[name]
 
-    // Remove new, function args from TOC test.
-    var title = text.replace(/^new /, '').replace(/\([^\)]*\)/, '');
+    if (!descriptor) {
+        descriptor = classes[name] = {
+            name: name,
+            staticMethods: [],
+            instanceMethods: []
+        };
+    }
 
-	if (level === 2) {
-		toc = toc+'  - title: '+title+'\n    url: /api\n    id: '+id+'\n    subnav:\n';
-	} else if (level >= 3) {
-		toc = toc+'    - title: '+title+'\n      url: /api\n      id: '+id+'\n';
-	}
-
-	return '<h'+level+' id="'+id+'">'+text+'</h'+level+'>';
-};
-
-renderer.code = function(code, lang) {
-	return '{% highlight '+lang+' %}'+code+'\n{% endhighlight %}\n';
+    return descriptor;
 }
 
-var api = marked(
-	fs.readFileSync(path.join(__dirname, '../../API.md'), 'utf-8'),
-	{renderer: renderer}
-);
+function document(data) {
+    if (data.kind === 'class' || data.kind === 'mixin') {
+        var descriptor = getClassDescriptor(data.name);
+        descriptor.description = data.classdesc;
+        descriptor.constructor = data;
+    }
 
-fs.writeFileSync(path.join(__dirname, '../_posts/3400-01-01-api.html'), index({
-  api: api,
-  toc: toc
-}));
+    else if (data.memberof) {
+        var descriptor = getClassDescriptor(data.memberof);
+        if (data.scope === 'instance') {
+            descriptor.instanceMethods.push(data);
+        } else if (data.scope === 'static') {
+            descriptor.staticMethods.push(data);
+        }
+    }
+}
+
+documentation(require('../../package.json').main)
+    .pipe(normalize())
+    .pipe(flatten())
+    .pipe(through(document))
+    .on('error', function(err) { throw err; })
+    .on('end', function() {
+        Handlebars.registerHelper('join', function(array, sep, options) {
+            return array ? array.map(function(item) { return options.fn(item); }).join(sep) : '';
+        });
+
+        Handlebars.registerPartial('methods', fs.readFileSync(path.join(__dirname, './methods.html.hbs'), 'utf8'));
+        Handlebars.registerPartial('signature', fs.readFileSync(path.join(__dirname, './signature.html.hbs'), 'utf8'));
+
+        var template = Handlebars.compile(fs.readFileSync(path.join(__dirname, './index.html.hbs'), 'utf8'));
+
+        fs.writeFileSync(
+            path.join(__dirname, '../_posts/3400-01-01-api.html'),
+            template({classes: _.values(classes)}));
+    });
+
+//renderer.code = function (code, lang) {
+//    return '{% highlight ' + lang + ' %}' + code + '\n{% endhighlight %}\n';
+//}

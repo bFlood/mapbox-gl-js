@@ -1,0 +1,16 @@
+<table class="documentation-params">
+    {{#if params}}
+    {{#params}}
+    <tr>
+        <td>{{#if @first}}{{../../name}}({{/if}}</td>
+        <td>&lt;{{type.name}}&gt;</td>
+        <td>{{name}}</td>
+        <td>{{#if @last}}){{else}},{{/if}}</td>
+    </tr>
+    {{/params}}
+    {{else}}
+    <tr>
+        <td>{{name}}()</td>
+    </tr>
+    {{/if}}
+</table>

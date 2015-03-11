@@ -27,3 +27,9 @@ var {
 .doc .icon.inline:before { vertical-align:middle; }
 .button.zeroclipboard-is-hover { background:#3bb2d0!important; }
 .js-clipboard:hover { cursor:pointer; }
+
+table.documentation-params,
+table.documentation-params td {
+    border: none;
+    padding: 0 2px;
+}

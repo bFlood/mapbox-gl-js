@@ -31,13 +31,16 @@
   "devDependencies": {
     "benchmark": "~1.0.0",
     "browserify": "^9.0.0",
+    "documentation": "git+https://github.com/documentationjs/documentation",
     "eslint": "^0.14.1",
+    "handlebars": "^3.0.1",
     "istanbul": "^0.3.0",
     "mapbox-gl-test-suite": "git+https://github.com/mapbox/mapbox-gl-test-suite.git#master",
     "marked": "0.3.x",
     "mkdirp": "^0.5.0",
     "st": "^0.5.1",
     "tape": "3.5.0",
+    "through": "^2.3.6",
     "underscore": "1.6.x",
     "watchify": "1.0.1",
     "zuul": "1.10.0"
