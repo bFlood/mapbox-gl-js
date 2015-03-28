@@ -8,7 +8,13 @@
     <tr>
         <td>{{>signature}}</td>
         <td>{{#returns}}&lt;{{type.name}}&gt; {{description}}{{/returns}}</td>
-        <td>{{description}}</td>
+        <td>
+            {{description}}
+            {{#examples}}
+            <h4>Code Example</h4>
+            {% highlight js %}{{{.}}}{% endhighlight %}
+            {{/examples}}
+        </td>
     </tr>
     {{/methods}}
 </table>
